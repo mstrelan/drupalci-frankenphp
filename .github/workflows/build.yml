@@ -33,4 +33,4 @@ jobs:
       run: curl http://localhost
     - name: Functional tests
       if: ${{ !cancelled() }}
-      run: docker compose exec -T -w /var/www/html app php ./core/scripts/run-tests.sh --color --keep-results --types PHPUnit-Functional --concurrency 1 --repeat 1 --sqlite "./sites/default/files/tests.sqlite" --dburl mysql://drupal:drupal@127.0.0.1/drupal --url http://localhost --verbose --non-html --all
+      run: docker compose exec -T -w /var/www/html app php ./core/scripts/run-tests.sh --color --keep-results --types PHPUnit-Functional --concurrency 1 --repeat 1 --sqlite "./sites/default/files/tests.sqlite" --dburl mysql://drupal:drupal@127.0.0.1/drupal --url http://localhost --verbose --non-html --all --php /usr/local/bin/php
