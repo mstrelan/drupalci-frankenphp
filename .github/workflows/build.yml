@@ -1,0 +1,36 @@
+name: Build
+on:
+  push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        repository: drupal/drupal
+        path: drupal
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: gd
+    - name: Install dependencies
+      working-directory: drupal
+      run: composer install
+    - name: Create directories
+      run: |
+        mkdir -p drupal/sites/simpletest
+    - name: Change ownership
+      run: sudo chown -R www-data:www-data drupal
+    - name: Docker compose
+      run: |
+        docker compose up --wait
+        docker compose ps
+    - name: Smoke test
+      run: curl http://localhost
+    - name: Functional tests
+      if: ${{ !cancelled() }}
+      run: docker compose exec -T -w /var/www/html app php ./core/scripts/run-tests.sh --color --keep-results --types PHPUnit-Functional --concurrency 1 --repeat 1 --sqlite "./sites/default/files/tests.sqlite" --dburl mysql://drupal:drupal@127.0.0.1/drupal --url http://localhost --verbose --non-html --all

@@ -1,0 +1,39 @@
+services:
+  app:
+    build: .
+    ports:
+      - 80:80
+      - 3306:3306
+    volumes:
+      - ./drupal:/var/www/html
+    environment:
+      - SERVER_NAME=:80
+      - SIMPLETEST_BASE_URL=http://localhost
+      - SIMPLETEST_DB=mysql://drupal:drupal@127.0.0.1/drupal
+      - MINK_DRIVER_ARGS_WEBDRIVER=["chrome", {"browserName":"chrome","goog:chromeOptions":{"args":["--headless", "--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage"]}}, "http://127.0.0.1:9515"]
+      - BROWSERTEST_OUTPUT_DIRECTORY=/tmp
+      - COMPOSER_MEMORY_LIMIT=-1
+      - PHP_MEMORY_LIMIT=512M
+
+  db:
+    image: mysql:latest
+    network_mode: service:app
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      MYSQL_USER: drupal
+      MYSQL_PASSWORD: drupal
+      MYSQL_DATABASE: drupal
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysql", "-e", "USE drupal;" ]
+      interval: 1s
+      retries: 30
+
+  chrome:
+    image: drupalci/chromedriver:production
+    network_mode: service:app
+
+volumes:
+  mysql-data:
+    driver: local
